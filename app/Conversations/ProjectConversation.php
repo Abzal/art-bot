@@ -280,7 +280,7 @@ protected function askProject($main_project_id)
     }
 
     protected function isEmail($email){
-        return preg_match('/^[a-zA-Zа-яА-Я ]{2,}$/', $email);
+        return preg_match('/.+\@.+\..+/', $email);
     }
 
 }
