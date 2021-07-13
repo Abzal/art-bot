@@ -17,3 +17,7 @@ $botman->hears('Hi(.*)', function ($bot) {
 $botman->hears('/start', function($bot){
     $bot->startConversation(new ProjectConversation);
 });
+
+$botman->hears('/stop', function($bot){
+$bot->userStorage()->delete();
+})->stopsConversation();

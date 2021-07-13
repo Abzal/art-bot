@@ -10,6 +10,7 @@ use App\Contact;
 use App\TicketForm;
 use App\Ticket;
 use App\Handbook;
+use App\MainProject;
 
 class ProjectConversation extends Conversation
 {
@@ -24,9 +25,8 @@ class ProjectConversation extends Conversation
     public function run()
     {
         $this->handbookRegion = Handbook::where('name','regions')->first();
-        $this->projects = Project::all();;
+        $this->projects = Project::all();
         $this->askPhone();
-        //$this->askRegions();
 
     }
 
@@ -52,11 +52,14 @@ class ProjectConversation extends Conversation
         });
     }
 
-protected function askProject()
+protected function askProject($main_project_id)
     {
         $menuQText = 'Выберите проект';
+        error_log($main_project_id);
+        $projects = Project::where('main_project_id',$main_project_id)->get();
+
         $btts = array();
-        foreach($this->projects as $project){
+        foreach($projects as $project){
             array_push($btts,Button::create($project->name)->value($project->name));
         }
 
@@ -100,8 +103,15 @@ protected function askProject()
 
                 $this->ask(($this->ticketform[$i]['row']), function($answer){
                     $result = $answer->getText();
-                    $this->ticketform[$this->fkey]['value'] = $result;
-                    $this->askForm();
+
+                    if( $this->check( $this->ticketform[$this->fkey]['validation'] , $result ) ){
+                        $this->ticketform[$this->fkey]['value'] = $result;
+                        $this->askForm();
+                    }else{
+                        $this->repeat();
+                    }
+
+
                 });
                 break;
             }else if( $i == ($tfc-1) )
@@ -112,6 +122,24 @@ protected function askProject()
 
     }
 
+
+    protected function check($casestr,$textstr){
+                    switch ($casestr) {
+                        case "latters":
+                            return $this->isString($textstr);
+                        case "number":
+                            return $this->isNumber($textstr);
+                        case "iin":
+                            return $this->isIin($textstr);
+                        case "email":
+                            return $this->isEmail($textstr);
+                        case "phone":
+                            return $this->isPhoneNumber($textstr);
+                        default:
+                           return true;
+                    }
+
+    }
 
     protected $selectedRegionArray = array();
 
@@ -152,16 +180,12 @@ protected function askProject()
 
         $question = Question::create('Выберите регион..')->addButtons($bttns);
 
-
         $this->ask($question,function($answer) {
             array_push($this->selectedRegionArray,$answer->getText());
             $this->askRegions();
         });
 
-
-
     }
-
 
     public function askEnd(){
          $question = Question::create('Отправить заявку?')
@@ -187,22 +211,28 @@ protected function askProject()
 
     }
 
-
+    protected $mainProjectArrNameId = array();
     public function askMenu()
     {
         $menuQText = 'Здравствуйте '. $this->contact->first_name . ' ' . $this->contact->last_name . '. Чем я могу Вам помочь?';
+
+        $allmp = MainProject::all();
+        $btts = array();
+        foreach($allmp as $project){
+            $this->mainProjectArrNameId[$project->name] = $project->id;
+            array_push($btts,Button::create($project->name)->value($project->name));
+        }
+
         $question = Question::create($menuQText)
-        ->addButtons([
-            Button::create('Населения')->value('Населения'),
-            Button::create('По сервисным программным продуктам (СПП)')->value('По сервисным программным продуктам (СПП)'),
-            Button::create('Сотруднику ЦОН')->value('Сотруднику ЦОН'),
-            Button::create('Государственным служащим')->value('Государственным служащим'),
-        ]);
+        ->addButtons($btts);
 
         $this->ask($question, function ($answer) {
-            if ($answer->getValue() == 'Населения' ) {
+
+//error_log('->>' . $this->mainProjectArrNameId[$answer->getValue()] . '<<-');
+
+            if (array_key_exists($answer->getValue(),$this->mainProjectArrNameId) ) {
                 $this->say($answer->getText());
-                $this->askProject();
+                $this->askProject($this->mainProjectArrNameId[$answer->getValue()]);
             }
             else
             {
@@ -232,7 +262,23 @@ protected function askProject()
 
 
     protected function isPhoneNumber($phone){
-        return preg_match('/((8|\+7)-?)?\(?\d{3,5}\)?-?\d{1}-?\d{1}-?\d{1}-?\d{1}-?\d{1}((-?\d{1})?-?\d{1})?/', $phone);
+        return preg_match('/^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$/', $phone);
+    }
+
+    protected function isIin($iin){
+        return preg_match('/^[0-9]{12}$/', $iin);
+    }
+
+    protected function isNumber($number){
+        return preg_match('/^[0-9]*$/', $number);
+    }
+
+    protected function isString($string){
+        return preg_match('/^[a-zA-Zа-яА-Я ]{2,}$/', $string);
+    }
+
+    protected function isEmail($email){
+        return preg_match('/^[a-zA-Zа-яА-Я ]{2,}$/', $email);
     }
 
 }
