@@ -199,6 +199,8 @@ protected function askProject($main_project_id)
 
                 $this->ticket->contact_id = $this->contact->id;
                 $this->ticket->ticket = json_encode($this->ticketform,JSON_UNESCAPED_UNICODE);
+                $this->ticket->status = "создано";
+                $this->ticket->channel = "виджет";
                 $this->ticket->save();
                 $this->say('Номер заявки: '.$this->ticket->id);
 
