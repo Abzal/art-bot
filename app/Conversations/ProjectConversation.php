@@ -77,7 +77,7 @@ protected function askProject($main_project_id)
 
              $this->ticket = new Ticket();
              $this->ticket->subject = $projectRec->name;
-
+             $this->ticket->form_id = $projectRec->form_id;
 
             $this->askForm();
 
@@ -198,13 +198,17 @@ protected function askProject($main_project_id)
          $this->ask($question, function ($answer) {
             if ($answer->getText() === 'send' ) {
 
+
+
                 $this->ticket->contact_phone = $this->contact->phone;
                 $this->ticket->contact_fio = $this->contact->first_name . ' ' . $this->contact->last_name;
                 $this->ticket->ticket = json_encode($this->ticketform,JSON_UNESCAPED_UNICODE);
                 $this->ticket->status_id = 1;
                 $this->ticket->channel = "виджет";
                 $this->ticket->created_at = date("Y-m-d H:i:s");
-                error_log('->>' . json_encode($this->ticket,JSON_UNESCAPED_UNICODE)  . '<<-');
+
+
+
 
                 $this->ticket->save();
 
