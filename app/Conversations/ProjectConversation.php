@@ -167,7 +167,14 @@ protected function askProject($main_project_id)
 
         if (empty($regionsArr)){
 
-            $this->ticketform[$this->fkey]['value'] = json_encode($this->selectedRegionArray,JSON_UNESCAPED_UNICODE);
+        $value='';
+
+        foreach ($this->selectedRegionArray as $selectedRegion) {
+
+          $value = (($value==='')?'':$value. '|') . $selectedRegion;
+        }
+
+            $this->ticketform[$this->fkey]['value'] = $value;
             $this->selectedRegionArray = array();
             $this->askForm();
             return null;
