@@ -25,6 +25,7 @@ class ProjectConversation extends Conversation
 
     public function run()
     {
+
         $this->handbookRegion = Handbook::where('name','regions')->first();
         $this->projects = Project::all();
         $this->askPhone();
@@ -210,7 +211,7 @@ protected function askProject($main_project_id)
                 $this->ticket->contact_phone = $this->contact->phone;
                 $this->ticket->contact_fio = $this->contact->first_name . ' ' . $this->contact->last_name;
                 $this->ticket->ticket = json_encode($this->ticketform,JSON_UNESCAPED_UNICODE);
-                $this->ticket->status_id = 1;
+                $this->ticket->status_id = 2;
                 $this->ticket->channel = "виджет";
                 $this->ticket->created_at = date("Y-m-d H:i:s");
 

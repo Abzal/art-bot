@@ -7,12 +7,32 @@ use BotMan\BotMan\Messages\Outgoing\Actions\Button;
 use BotMan\BotMan\Messages\Outgoing\Question;
 
 
+
 $botman = resolve('botman');
 
-$botman->hears('Hi(.*)', function ($bot) {
-    $bot->reply('Hello!' . $bot);
+
+
+$botman->fallback(function ($bot) {
+
+
+    $question = Question::create('Введите /start чтобы начать создание заявки')
+        ->addButtons([
+            Button::create('/start')->value('/start'),
+
+        ]);
+
+    $bot->ask($question, function ($answer, $con, $bot) {
+        $bot->reply('Hi');
+        $bot->startConversation(new ProjectConversation);
+    });
+
+
 });
-//$botman->hears('start(.*)', BotManController::class.'@startConversation');
+
+
+$botman->hears('Hi(.*)', function ($bot) {
+    $bot->reply('Hello!');
+});
 
 $botman->hears('/start', function($bot){
     $bot->startConversation(new ProjectConversation);
